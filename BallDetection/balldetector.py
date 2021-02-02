@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import detection_utils
 
 
 class BallDetector:
@@ -8,22 +9,6 @@ class BallDetector:
         self.hsv_thresh_lower = hsv_thresh_lower
         self.hsv_thresh_upper = hsv_thresh_upper
         self.cap = cap
-
-    @staticmethod
-    def resize_with_aspect_ratio(image, width=None, height=None, inter=cv2.INTER_AREA):
-        dim = None
-        (h, w) = image.shape[:2]
-
-        if width is None and height is None:
-            return image
-        if width is None:
-            r = height / float(h)
-            dim = (int(w * r), height)
-        else:
-            r = width / float(w)
-            dim = (width, int(h * r))
-
-        return cv2.resize(image, dim, interpolation=inter)
 
     def loop(self):
         while True:
@@ -75,7 +60,7 @@ class BallDetector:
                 cv2.circle(im_dict["output"], (a_min, b_min), r, (255, 0, 0), 5)
 
             for im_name in im_dict.keys():
-                im_resized = BallDetector.resize_with_aspect_ratio(im_dict.get(im_name), width=500)
+                im_resized = detection_utils.resize_with_aspect_ratio(im_dict.get(im_name), width=500)
                 cv2.imshow(im_name, im_resized)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
