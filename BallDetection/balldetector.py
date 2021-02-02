@@ -17,10 +17,7 @@ class BallDetector:
 
             hsv = cv2.cvtColor(self.im_dict["frame"], cv2.COLOR_BGR2HSV)
 
-            lower_yellow = np.array([23, 10, 187], dtype=np.uint8)
-            upper_yellow = np.array([89, 190, 255], dtype=np.uint8)
-
-            self.im_dict["mask"] = cv2.inRange(hsv, lower_yellow, upper_yellow)
+            self.im_dict["mask"] = cv2.inRange(hsv, self.hsv_thresh_lower, self.hsv_thresh_upper)
             # im_dict["frame_gray"] = cv2.cvtColor(im_dict["frame"], cv2.COLOR_BGR2GRAY)
             self.im_dict["masked"] = cv2.bitwise_and(self.im_dict["frame"], self.im_dict["frame"], mask=self.im_dict["mask"])
             self.im_dict["gray"] = cv2.cvtColor(self.im_dict["masked"], cv2.COLOR_BGR2GRAY)
