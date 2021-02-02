@@ -11,6 +11,7 @@ class BallDetector:
         self.cap = cap
         self.cur_frame_dict = {}
         self.filter_mode = filter_mode
+        self.cur_detected_balls = None
 
     def filter_by_thresh(self):
         hsv = cv2.cvtColor(self.cur_frame_dict["raw"], cv2.COLOR_BGR2HSV)
@@ -37,40 +38,41 @@ class BallDetector:
         else:
             raise Exception("Unknown filter mode" + str(self.filter_mode))
 
+    def draw_circles(self):
+        if self.cur_detected_balls is not None:
+
+            # Convert the circle parameters a, b and r to integers.
+            detected_balls_int = np.uint16(np.around(self.cur_detected_balls))
+
+            min_b = detected_balls_int[0, :][0][1]
+            min_index = 0
+            i = 0
+            for pt in detected_balls_int[0, :]:
+                a, b, r = pt[0], pt[1], pt[2]
+                if b > min_b:
+                    min_index = i
+                    min_b = b
+
+                # Draw the circumference of the circle.
+                cv2.circle(self.cur_frame_dict["output"], (a, b), r, (0, 255, 0), 2)
+
+                # Draw a small circle (of radius 1) to show the center.
+                cv2.circle(self.cur_frame_dict["output"], (a, b), 1, (0, 0, 255), 3)
+                i += 1
+            pt_min = detected_balls_int[0, :][min_index]
+            a_min, b_min, r_min = pt_min[0], pt_min[1], pt_min[2]
+            cv2.circle(self.cur_frame_dict["output"], (a_min, b_min), r, (255, 0, 0), 5)
 
     def loop(self):
         while True:
             _, self.cur_frame_dict["raw"] = self.cap.read()
 
             frame_to_hough = self.get_frame_to_hough()
-            detected_circles = cv2.HoughCircles(frame_to_hough,
+            self.cur_detected_balls = cv2.HoughCircles(frame_to_hough,
                                                 cv2.HOUGH_GRADIENT, 1, 20, param1=50,
                                                 param2=20, minRadius=10, maxRadius=30)
 
-            # Draw circles that are detected.
-            if detected_circles is not None:
-
-                # Convert the circle parameters a, b and r to integers.
-                detected_circles = np.uint16(np.around(detected_circles))
-
-                min_b = detected_circles[0, :][0][1]
-                min_index = 0
-                i = 0
-                for pt in detected_circles[0, :]:
-                    a, b, r = pt[0], pt[1], pt[2]
-                    if b > min_b:
-                        min_index = i
-                        min_b = b
-
-                    # Draw the circumference of the circle.
-                    cv2.circle(self.cur_frame_dict["output"], (a, b), r, (0, 255, 0), 2)
-
-                    # Draw a small circle (of radius 1) to show the center.
-                    cv2.circle(self.cur_frame_dict["output"], (a, b), 1, (0, 0, 255), 3)
-                    i += 1
-                pt_min = detected_circles[0, :][min_index]
-                a_min, b_min, r_min = pt_min[0], pt_min[1], pt_min[2]
-                cv2.circle(self.cur_frame_dict["output"], (a_min, b_min), r, (255, 0, 0), 5)
+            self.draw_circles()
 
             for im_name in self.cur_frame_dict.keys():
                 im_resized = detection_utils.resize_with_aspect_ratio(self.cur_frame_dict.get(im_name), width=500)
