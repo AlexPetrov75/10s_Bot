@@ -5,27 +5,45 @@ import detection_utils
 
 class BallDetector:
 
-    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper):
+    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode):
         self.hsv_thresh_lower = hsv_thresh_lower
         self.hsv_thresh_upper = hsv_thresh_upper
         self.cap = cap
         self.cur_frame_dict = {}
+        self.filter_mode = filter_mode
+
+    def filter_by_thresh(self):
+        hsv = cv2.cvtColor(self.cur_frame_dict["raw"], cv2.COLOR_BGR2HSV)
+
+        self.cur_frame_dict["mask"] = cv2.inRange(hsv, self.hsv_thresh_lower, self.hsv_thresh_upper)
+        self.cur_frame_dict["masked"] = cv2.bitwise_and(self.cur_frame_dict["raw"], self.cur_frame_dict["raw"],
+                                                        mask=self.cur_frame_dict["mask"])
+        self.cur_frame_dict["gray"] = cv2.cvtColor(self.cur_frame_dict["masked"], cv2.COLOR_BGR2GRAY)
+        self.cur_frame_dict["gray_blurred"] = cv2.blur(self.cur_frame_dict["gray"], (3, 3))
+        self.cur_frame_dict["output"] = self.cur_frame_dict["raw"].copy()
+
+        return self.cur_frame_dict["gray_blurred"]
+
+    def filter_by_canny(self):
+        self.cur_frame_dict["canny"] = cv2.Canny(self.cur_frame_dict["raw"], 100, 200)
+        self.cur_frame_dict["output"] = self.cur_frame_dict["raw"].copy()
+        return self.cur_frame_dict["canny"]
+
+    def get_frame_to_hough(self):
+        if self.filter_mode == "thresh":
+            return self.filter_by_thresh()
+        elif self.filter_mode == "canny":
+            return self.filter_by_canny()
+        else:
+            raise Exception("Unknown filter mode" + str(self.filter_mode))
+
 
     def loop(self):
         while True:
             _, self.cur_frame_dict["raw"] = self.cap.read()
 
-            hsv = cv2.cvtColor(self.cur_frame_dict["raw"], cv2.COLOR_BGR2HSV)
-
-            self.cur_frame_dict["mask"] = cv2.inRange(hsv, self.hsv_thresh_lower, self.hsv_thresh_upper)
-            self.cur_frame_dict["masked"] = cv2.bitwise_and(self.cur_frame_dict["raw"], self.cur_frame_dict["raw"], mask=self.cur_frame_dict["mask"])
-            self.cur_frame_dict["gray"] = cv2.cvtColor(self.cur_frame_dict["masked"], cv2.COLOR_BGR2GRAY)
-            self.cur_frame_dict["gray_blurred"] = cv2.blur(self.cur_frame_dict["gray"], (3, 3))
-
-            self.cur_frame_dict["output"] = self.cur_frame_dict["raw"].copy()
-            self.cur_frame_dict["canny"] = cv2.Canny(self.cur_frame_dict["raw"], 100, 200)
-
-            detected_circles = cv2.HoughCircles(self.cur_frame_dict["canny"],
+            frame_to_hough = self.get_frame_to_hough()
+            detected_circles = cv2.HoughCircles(frame_to_hough,
                                                 cv2.HOUGH_GRADIENT, 1, 20, param1=50,
                                                 param2=20, minRadius=10, maxRadius=30)
 
