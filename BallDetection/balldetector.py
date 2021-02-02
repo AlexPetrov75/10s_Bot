@@ -13,18 +13,17 @@ class BallDetector:
 
     def loop(self):
         while True:
-            _, self.im_dict["frame"] = self.cap.read()
+            _, self.im_dict["raw"] = self.cap.read()
 
-            hsv = cv2.cvtColor(self.im_dict["frame"], cv2.COLOR_BGR2HSV)
+            hsv = cv2.cvtColor(self.im_dict["raw"], cv2.COLOR_BGR2HSV)
 
             self.im_dict["mask"] = cv2.inRange(hsv, self.hsv_thresh_lower, self.hsv_thresh_upper)
-            # im_dict["frame_gray"] = cv2.cvtColor(im_dict["frame"], cv2.COLOR_BGR2GRAY)
-            self.im_dict["masked"] = cv2.bitwise_and(self.im_dict["frame"], self.im_dict["frame"], mask=self.im_dict["mask"])
+            self.im_dict["masked"] = cv2.bitwise_and(self.im_dict["raw"], self.im_dict["raw"], mask=self.im_dict["mask"])
             self.im_dict["gray"] = cv2.cvtColor(self.im_dict["masked"], cv2.COLOR_BGR2GRAY)
             self.im_dict["gray_blurred"] = cv2.blur(self.im_dict["gray"], (3, 3))
 
-            self.im_dict["output"] = self.im_dict["frame"].copy()
-            self.im_dict["canny"] = cv2.Canny(self.im_dict["frame"], 100, 200)
+            self.im_dict["output"] = self.im_dict["raw"].copy()
+            self.im_dict["canny"] = cv2.Canny(self.im_dict["raw"], 100, 200)
 
             detected_circles = cv2.HoughCircles(self.im_dict["canny"],
                                                 cv2.HOUGH_GRADIENT, 1, 20, param1=50,
