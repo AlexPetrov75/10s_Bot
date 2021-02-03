@@ -5,7 +5,7 @@ import detection_utils
 
 class BallDetector:
 
-    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, output_scale=None):
+    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, input_scale=None, output_scale=None):
         self.hsv_thresh_lower = hsv_thresh_lower
         self.hsv_thresh_upper = hsv_thresh_upper
         self.cap = cap
@@ -13,6 +13,7 @@ class BallDetector:
         self.filter_mode = filter_mode
         self.cur_detected_balls = None
         self.show_frames_on = show_frames_on
+        self.input_scale = input_scale
         self.output_scale = output_scale
 
     def preprocess_thresh(self):
@@ -75,7 +76,12 @@ class BallDetector:
 
     def loop(self):
         while True:
-            _, self.cur_frame_dict["raw"] = self.cap.read()
+            _, raw = self.cap.read()
+
+            if self.input_scale:
+                self.cur_frame_dict["raw"] = detection_utils.resize_with_aspect_ratio_rel(raw, self.input_scale)
+            else:
+                self.cur_frame_dict["raw"] = raw
 
             frame_to_hough = self.get_frame_to_hough()
             self.cur_detected_balls = cv2.HoughCircles(frame_to_hough,
