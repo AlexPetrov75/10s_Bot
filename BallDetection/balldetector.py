@@ -5,7 +5,7 @@ import detection_utils
 
 class BallDetector:
 
-    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, resize_width=None, resize_height=None):
+    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, output_scale=None):
         self.hsv_thresh_lower = hsv_thresh_lower
         self.hsv_thresh_upper = hsv_thresh_upper
         self.cap = cap
@@ -13,8 +13,7 @@ class BallDetector:
         self.filter_mode = filter_mode
         self.cur_detected_balls = None
         self.show_frames_on = show_frames_on
-        self.resize_width = resize_width
-        self.resize_height = resize_height
+        self.output_scale = output_scale
 
     def filter_by_thresh(self):
         hsv = cv2.cvtColor(self.cur_frame_dict["raw"], cv2.COLOR_BGR2HSV)
@@ -69,10 +68,8 @@ class BallDetector:
     def show_frames(self):
         for im_name in self.cur_frame_dict.keys():
             im = self.cur_frame_dict.get(im_name)
-            if self.resize_height:
-                im = detection_utils.resize_with_aspect_ratio(im, height=self.resize_height)
-            elif self.resize_width:
-                im = detection_utils.resize_with_aspect_ratio(im, width=self.resize_width)
+            if self.output_scale:
+                im = detection_utils.resize_with_aspect_ratio_rel(im, self.output_scale)
 
             cv2.imshow(im_name, im)
 

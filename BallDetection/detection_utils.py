@@ -1,7 +1,15 @@
 import cv2
 
 
-def resize_with_aspect_ratio(image, width=None, height=None, inter=cv2.INTER_AREA):
+def resize_with_aspect_ratio_rel(image, scale_ratio, inter=cv2.INTER_AREA):
+    width = int(image.shape[1] * scale_ratio)
+    height = int(image.shape[0] * scale_ratio)
+    dsize = (width, height)
+    output = cv2.resize(image, dsize)
+    return output
+
+
+def resize_with_aspect_ratio_abs(image, width=None, height=None, inter=cv2.INTER_AREA):
     dim = None
     (h, w) = image.shape[:2]
 
