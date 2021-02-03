@@ -15,7 +15,7 @@ class BallDetector:
         self.show_frames_on = show_frames_on
         self.output_scale = output_scale
 
-    def filter_by_thresh(self):
+    def preprocess_thresh(self):
         hsv = cv2.cvtColor(self.cur_frame_dict["raw"], cv2.COLOR_BGR2HSV)
 
         self.cur_frame_dict["mask"] = cv2.inRange(hsv, self.hsv_thresh_lower, self.hsv_thresh_upper)
@@ -27,16 +27,16 @@ class BallDetector:
 
         return self.cur_frame_dict["gray_blurred"]
 
-    def filter_by_canny(self):
+    def preprocess_canny(self):
         self.cur_frame_dict["canny"] = cv2.Canny(self.cur_frame_dict["raw"], 100, 200)
         self.cur_frame_dict["output"] = self.cur_frame_dict["raw"].copy()
         return self.cur_frame_dict["canny"]
 
     def get_frame_to_hough(self):
         if self.filter_mode == "thresh":
-            return self.filter_by_thresh()
+            return self.preprocess_thresh()
         elif self.filter_mode == "canny":
-            return self.filter_by_canny()
+            return self.preprocess_canny()
         else:
             raise Exception("Unknown filter mode" + str(self.filter_mode))
 
