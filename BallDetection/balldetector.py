@@ -1,11 +1,12 @@
 import cv2
 import numpy as np
 import detection_utils
+import time
 
 
 class BallDetector:
 
-    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, input_scale=None, output_scale=None):
+    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, input_scale=None, output_scale=None, print_frametime=False):
         self.hsv_thresh_lower = hsv_thresh_lower
         self.hsv_thresh_upper = hsv_thresh_upper
         self.cap = cap
@@ -15,6 +16,7 @@ class BallDetector:
         self.show_frames_on = show_frames_on
         self.input_scale = input_scale
         self.output_scale = output_scale
+        self.print_frametime = print_frametime
 
     def preprocess_thresh(self):
         hsv = cv2.cvtColor(self.cur_frame_dict["raw"], cv2.COLOR_BGR2HSV)
@@ -75,6 +77,7 @@ class BallDetector:
             cv2.imshow(im_name, im)
 
     def loop(self):
+        prev = time.time()
         while True:
             _, raw = self.cap.read()
 
@@ -92,6 +95,11 @@ class BallDetector:
 
             if self.show_frames_on:
                 self.show_frames()
+
+            if self.print_frametime:
+                t = time.time()
+                print("Frametime (ms): " + str((t - prev) * 1000))
+                prev = t
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
