@@ -1,6 +1,6 @@
 import cv2
 import os
-import balldetector
+import BallDetector
 import BallCollector
 import numpy as np
 
