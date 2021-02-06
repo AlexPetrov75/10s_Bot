@@ -22,10 +22,14 @@ class BallDetector:
 
         self.image_source = ImageSource.ImageSource(cap)
 
+        self.preprocessor = self.get_preprocessor(filter_mode, hsv_thresh_lower, hsv_thresh_upper)
+
+    @staticmethod
+    def get_preprocessor(filter_mode, hsv_thresh_lower, hsv_thresh_upper):
         if filter_mode == "canny":
-            self.preprocessor = CannyPreprocessor.CannyPreprocessor()
+            return CannyPreprocessor.CannyPreprocessor()
         elif filter_mode == "thresh":
-            self.preprocessor = ThresholdPreprocessor.ThresholdPreprocessor(hsv_thresh_lower, hsv_thresh_upper)
+            return ThresholdPreprocessor.ThresholdPreprocessor(hsv_thresh_lower, hsv_thresh_upper)
         else:
             raise Exception("Unknown preprocessing mode: " + str(filter_mode))
 
@@ -59,31 +63,32 @@ class BallDetector:
             self.output_img = detection_utils.resize_with_aspect_ratio_rel(self.output_img, self.output_scale)
 
         cv2.imshow("output", self.output_img)
+        if cv2.waitKey(1) & 0xff == ord('q'):
+            quit()
 
-    def loop(self):
+    def detect_balls(self):
         prev = time.time()
-        while True:
-            raw = self.image_source.get_frame()
+        raw = self.image_source.get_frame()
 
-            if self.input_scale:
-                raw = detection_utils.resize_with_aspect_ratio_rel(raw, self.input_scale)
+        if self.input_scale:
+            raw = detection_utils.resize_with_aspect_ratio_rel(raw, self.input_scale)
 
-            self.output_img = raw.copy()
+        self.output_img = raw.copy()
 
-            frame_to_hough = self.preprocessor.preprocess(raw)
-            self.cur_detected_balls = cv2.HoughCircles(frame_to_hough,
-                                                cv2.HOUGH_GRADIENT, 1, 20, param1=50,
-                                                param2=20, minRadius=10, maxRadius=30)
+        frame_to_hough = self.preprocessor.preprocess(raw)
+        self.cur_detected_balls = cv2.HoughCircles(frame_to_hough,
+                                            cv2.HOUGH_GRADIENT, 1, 20, param1=50,
+                                            param2=20, minRadius=10, maxRadius=30)
 
-            self.draw_circles()
+        self.draw_circles()
 
-            if self.show_frames_on:
-                self.show_frames()
+        if self.show_frames_on:
+            self.show_frames()
 
-            if self.print_frametime:
-                t = time.time()
-                print("Frametime (ms): " + str((t - prev) * 1000))
-                prev = t
+        if self.print_frametime:
+            t = time.time()
+            print("Frametime (ms): " + str((t - prev) * 1000))
+            prev = t
 
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+        return self.cur_detected_balls
+
