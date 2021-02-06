@@ -9,4 +9,4 @@ class CannyPreprocessor(PreprocessorInterface):
         super().__init__()
 
     def preprocess(self, raw_img: np.ndarray):
-        return cv2.Canny(raw_img, 100, 200)
+        return cv2.Canny(raw_img, 50, 100)
