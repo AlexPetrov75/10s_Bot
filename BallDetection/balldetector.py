@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import detection_utils
 import time
+import ImageSource
 
 
 class BallDetector:
@@ -9,7 +10,6 @@ class BallDetector:
     def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, input_scale=None, output_scale=None, print_frametime=False):
         self.hsv_thresh_lower = hsv_thresh_lower
         self.hsv_thresh_upper = hsv_thresh_upper
-        self.cap = cap
         self.cur_frame_dict = {}
         self.filter_mode = filter_mode
         self.cur_detected_balls = None
@@ -17,6 +17,8 @@ class BallDetector:
         self.input_scale = input_scale
         self.output_scale = output_scale
         self.print_frametime = print_frametime
+
+        self.image_source = ImageSource.ImageSource(cap)
 
     def preprocess_thresh(self):
         hsv = cv2.cvtColor(self.cur_frame_dict["raw"], cv2.COLOR_BGR2HSV)
@@ -79,7 +81,7 @@ class BallDetector:
     def loop(self):
         prev = time.time()
         while True:
-            _, raw = self.cap.read()
+            raw = self.image_source.get_frame()
 
             if self.input_scale:
                 self.cur_frame_dict["raw"] = detection_utils.resize_with_aspect_ratio_rel(raw, self.input_scale)
