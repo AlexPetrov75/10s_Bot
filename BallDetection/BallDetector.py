@@ -10,7 +10,7 @@ import ThresholdPreprocessor
 
 class BallDetector:
 
-    def __init__(self, cap, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, input_scale=None, output_scale=None, print_frametime=False):
+    def __init__(self, source_type, hsv_thresh_lower, hsv_thresh_upper, filter_mode, show_frames_on=True, input_scale=None, output_scale=None, print_frametime=False, vid_file_path=None):
         self.hsv_thresh_lower = hsv_thresh_lower
         self.hsv_thresh_upper = hsv_thresh_upper
         self.cur_detected_balls = None
@@ -20,7 +20,7 @@ class BallDetector:
         self.print_frametime = print_frametime
         self.output_img = None
 
-        self.image_source = ImageSource.ImageSource(cap)
+        self.image_source = ImageSource.ImageSource(source_type, vid_file_path=vid_file_path)
 
         self.preprocessor = self.get_preprocessor(filter_mode, hsv_thresh_lower, hsv_thresh_upper)
 
