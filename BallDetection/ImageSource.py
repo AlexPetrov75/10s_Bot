@@ -29,7 +29,7 @@ class ImageSource:
 
     def get_frame_from_picamera(self):
         stream = picamera.array.PiRGBArray(self.pi_camera)
-        self.pi_camera.capture(stream, format="bgr")
+        self.pi_camera.capture(stream, format="bgr", use_video_port=True)
         return stream.array
 
     def get_frame(self):
