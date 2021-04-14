@@ -75,10 +75,12 @@ class BallDetector:
 
         self.output_img = raw.copy()
 
-        frame_to_hough = self.preprocessor.preprocess(raw)
+        blur = cv2.blur(raw, (5,5), 0)
+
+        frame_to_hough = self.preprocessor.preprocess(blur)
         self.cur_detected_balls = cv2.HoughCircles(frame_to_hough,
-                                            cv2.HOUGH_GRADIENT, 1, 10, param1=50,
-                                            param2=20, minRadius=5, maxRadius=15)
+                                            cv2.HOUGH_GRADIENT, 1, 100, param1=50,
+                                            param2=20, minRadius=5, maxRadius=20)
 
         self.draw_circles()
 
