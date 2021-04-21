@@ -2,7 +2,7 @@
 #define COMMAND_H
 typedef struct Command
 {
-    char name_char;
+    char command_char;
     float arg;
 } Command;
 #endif
